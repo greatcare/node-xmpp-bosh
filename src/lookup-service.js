@@ -127,7 +127,10 @@ dutil.copy(XMPPLookupService.prototype, {
                 host: self._domain_name,
                 port: self._port
             }, on_success);
-            socket.once('error', on_error);
+            socket.once('error', function(e) {
+                log.error('ERROR WHILE CONNECTING: %s', e);
+                on_error(e);
+            });
         }
 
         function try_connect_route(on_success, on_error) {
