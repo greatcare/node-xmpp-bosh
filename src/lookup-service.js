@@ -111,6 +111,7 @@ dutil.copy(XMPPLookupService.prototype, {
         var connectors = [
             try_connect_route,
             try_connect_SRV_lookup,
+            try_connect_direct,
             give_up_trying_to_connect
         ];
 
@@ -118,6 +119,15 @@ dutil.copy(XMPPLookupService.prototype, {
             var connector = connectors.shift();
             assert(connector && typeof(connector) === 'function');
             connector(_on_socket_connected, _connect_next);
+        }
+
+        function try_connect_direct(on_success, on_error) {
+            log.trace('try_connect_route - %s:%s', self._domain_name, self._port);
+            socket.connect({
+                host: self._domain_name,
+                port: self._port
+            }, on_success);
+            socket.once('error', on_error);
         }
 
         function try_connect_route(on_success, on_error) {
@@ -136,10 +146,15 @@ dutil.copy(XMPPLookupService.prototype, {
         }
 
         function try_connect_SRV_lookup(on_success, on_error) {
+            if(self._no_srv) {
+                on_error();
+                return;
+            }
+
             log.trace('try_connect_SRV_lookup - %s, %s',self._domain_name, self._port);
 
             // Then try a normal SRV lookup.
-            var emitter = SRV.connect(socket, self._no_srv ? [ ] : ['_xmpp-client._tcp'],
+            var emitter = SRV.connect(socket, ['_xmpp-client._tcp'],
                                       self._domain_name, self._port);
 
             emitter.once('connect', on_success);
