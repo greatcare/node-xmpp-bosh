@@ -58,7 +58,7 @@ var XML_CLOSE_TAG = '<close xmlns="urn:ietf:params:xml:ns:xmpp-framing" />';
 //
 
 exports.createServer = function(bosh_server, options, webSocket) {
-    webSocket = webSocket || require('ws');
+    webSocket = webSocket || require('uws');
 
 	// Config options
 	var ping_interval = options.websocket_ping_interval;
